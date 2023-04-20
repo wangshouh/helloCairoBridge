@@ -1,3 +1,4 @@
-[submodule "cairo"]
-	path = cairo
-	url = https://github.com/wangshouh/starknetBridgeL2.git
+[submodule "helloERC20"]
+	path = helloERC20
+	url = https://github.com/wangshouh/helloERC20.git
+	branch = bridge
