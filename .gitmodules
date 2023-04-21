@@ -2,3 +2,6 @@
 	path = helloERC20
 	url = https://github.com/wangshouh/helloERC20.git
 	branch = bridge
+[submodule "helloBridgeSol/lib/forge-std"]
+	path = helloBridgeSol/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
