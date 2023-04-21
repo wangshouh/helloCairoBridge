@@ -16,6 +16,8 @@ contract BridgeERC20 {
 
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
+    event MessageHash(bytes32 indexed msgHash);
+
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
@@ -42,6 +44,12 @@ contract BridgeERC20 {
 
     address public starkNetAddress;
 
+    uint256 public L2TokenAddress;
+
+    mapping(uint256 => mapping(address => uint256)) public nonceValue;
+
+    uint256 internal constant SELECTOR = 0x29d87c15de029f724fce9cf6a2aed131eda59233a02ec4e3bdd0520edee37e7;
+
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -50,12 +58,14 @@ contract BridgeERC20 {
         string memory _name,
         string memory _symbol,
         uint8 _decimals,
-        address _starkNetAddress
+        address _starkNetAddress,
+        uint256 _l2Token
     ) {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
         starkNetAddress = _starkNetAddress;
+        L2TokenAddress = _l2Token;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -141,5 +151,22 @@ contract BridgeERC20 {
         );
         (address receiver, uint256 amount) = payloadParese(payload);
         _mint(receiver, amount);
+    }
+
+    function transferToL2(uint256 L2Address, uint256 amount) external {
+        uint256[] memory payload = new uint256[](3);
+        uint128 low = uint128(amount);
+        uint128 high = uint128(amount >> 128);
+        payload[0] = L2Address;
+        payload[1] = low;
+        payload[2] = high;
+
+        (bytes32 msgHash,uint256 nonce) = IStarknetMessaging(starkNetAddress).sendMessageToL2(
+            L2TokenAddress, SELECTOR, payload
+        );
+
+        emit MessageHash(msgHash);
+
+        nonceValue[nonce][msg.sender] = amount;
     }
 }
