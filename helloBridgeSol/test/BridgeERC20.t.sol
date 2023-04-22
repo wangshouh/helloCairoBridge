@@ -57,7 +57,7 @@ contract CounterTest is Test {
 
     function test_transferToL2() public {
         token_code.mint(1 ether);
-        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 toAddress = 0x04df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
         uint256 amount = 1 ether;
         token_code.transferToL2{value: 1 ether}(toAddress, amount);
         assertEq(token_code.nonceValue(1, address(this)), amount);
@@ -65,7 +65,7 @@ contract CounterTest is Test {
 
     function test_FailstartCancel() public {
         token_code.mint(1 ether);
-        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 toAddress = 0x04df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
         uint256 amount = 1 ether;
         token_code.transferToL2{value: 1 ether}(toAddress, amount);
         vm.expectRevert("NONCE_NOT_EXIST");
@@ -74,7 +74,7 @@ contract CounterTest is Test {
 
     function test_startCancel() public {
         token_code.mint(1 ether);
-        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 toAddress = 0x04df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
         uint256 amount = 1 ether;
         token_code.transferToL2{value: 1 ether}(toAddress, amount);
         token_code.startCancel(toAddress, 1);
