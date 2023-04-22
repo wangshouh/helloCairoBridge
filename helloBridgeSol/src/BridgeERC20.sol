@@ -194,7 +194,7 @@ contract BridgeERC20 {
         require(amount > 0, "NONCE_NOT_EXIST");
         uint256[] memory payload = generatePayload(L2Address, amount);
         IStarknetMessaging(starkNetAddress).startL1ToL2MessageCancellation(
-            L2Address, SELECTOR, payload, nonce
+            L2TokenAddress, SELECTOR, payload, nonce
         );
     }
 
@@ -203,7 +203,7 @@ contract BridgeERC20 {
         require(amount > 0, "NONCE_NOT_EXIST");
         uint256[] memory payload = generatePayload(L2Address, amount);
         IStarknetMessaging(starkNetAddress).cancelL1ToL2Message(
-            L2Address, SELECTOR, payload, nonce
+            L2TokenAddress, SELECTOR, payload, nonce
         );
         nonceValue[nonce][msg.sender] = 0;
         _mint(msg.sender, amount);
