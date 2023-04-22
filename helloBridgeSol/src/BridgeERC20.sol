@@ -134,6 +134,16 @@ contract BridgeERC20 {
         emit Transfer(from, address(0), amount);
     }
 
+    function mint(uint256 amount) external {
+        totalSupply += amount;
+
+        unchecked {
+            balanceOf[msg.sender] += amount;
+        }
+
+        emit Transfer(address(0), msg.sender, amount);
+    }
+
     /*//////////////////////////////////////////////////////////////
                                Bridge LOGIC
     //////////////////////////////////////////////////////////////*/
@@ -153,20 +163,49 @@ contract BridgeERC20 {
         _mint(receiver, amount);
     }
 
-    function transferToL2(uint256 L2Address, uint256 amount) external {
-        uint256[] memory payload = new uint256[](3);
+    function generatePayload(
+        uint256 L2Address, 
+        uint256 amount
+    ) internal pure returns (uint256[] memory payload) {
+        payload = new uint256[](3);
         uint128 low = uint128(amount);
         uint128 high = uint128(amount >> 128);
+
         payload[0] = L2Address;
         payload[1] = low;
         payload[2] = high;
+    }
 
-        (bytes32 msgHash,uint256 nonce) = IStarknetMessaging(starkNetAddress).sendMessageToL2(
+    function transferToL2(uint256 L2Address, uint256 amount) payable external {
+        _burn(msg.sender, amount);
+        uint256[] memory payload = generatePayload(L2Address, amount);
+
+        (bytes32 msgHash,uint256 nonce) = IStarknetMessaging(starkNetAddress).sendMessageToL2{value: msg.value}(
             L2TokenAddress, SELECTOR, payload
         );
 
         emit MessageHash(msgHash);
 
         nonceValue[nonce][msg.sender] = amount;
+    }
+
+    function startCancel(uint256 L2Address, uint256 nonce) external {
+        uint256 amount = nonceValue[nonce][msg.sender];
+        require(amount > 0, "NONCE_NOT_EXIST");
+        uint256[] memory payload = generatePayload(L2Address, amount);
+        IStarknetMessaging(starkNetAddress).startL1ToL2MessageCancellation(
+            L2Address, SELECTOR, payload, nonce
+        );
+    }
+
+    function cancel(uint256 L2Address, uint256 nonce) external {
+        uint256 amount = nonceValue[nonce][msg.sender];
+        require(amount > 0, "NONCE_NOT_EXIST");
+        uint256[] memory payload = generatePayload(L2Address, amount);
+        IStarknetMessaging(starkNetAddress).cancelL1ToL2Message(
+            L2Address, SELECTOR, payload, nonce
+        );
+        nonceValue[nonce][msg.sender] = 0;
+        _mint(msg.sender, amount);
     }
 }

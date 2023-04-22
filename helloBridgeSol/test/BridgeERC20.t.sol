@@ -14,7 +14,8 @@ contract CounterTest is Test {
 
     function setUp() public {
         core = new Core();
-        token_code = new BridgeERC20("BRIDGE", "BE", 18, address(core));
+        uint256 L2Address = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        token_code = new BridgeERC20("BRIDGE", "BE", 18, address(core), L2Address);
 
         bytes memory code = address(token_code).code;
         targetAddr = address(0xAFD48f565e1aC63f3e547227c9AD5243990f3D40);
@@ -52,5 +53,30 @@ contract CounterTest is Test {
 
         vm.expectRevert("INVALID_MESSAGE_TO_CONSUME");
         token_code.despoitFromL2(fromAddress, payload);
+    }
+
+    function test_transferToL2() public {
+        token_code.mint(1 ether);
+        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 amount = 1 ether;
+        token_code.transferToL2{value: 1 ether}(toAddress, amount);
+        assertEq(token_code.nonceValue(1, address(this)), amount);
+    }
+
+    function test_FailstartCancel() public {
+        token_code.mint(1 ether);
+        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 amount = 1 ether;
+        token_code.transferToL2{value: 1 ether}(toAddress, amount);
+        vm.expectRevert("NONCE_NOT_EXIST");
+        token_code.startCancel(toAddress, 2);
+    }
+
+    function test_startCancel() public {
+        token_code.mint(1 ether);
+        uint256 toAddress = 0x03df9e4bb7dbee67fbfb50d5e1e8205df55c7b85789b1eb0dca618c390c0ffee;
+        uint256 amount = 1 ether;
+        token_code.transferToL2{value: 1 ether}(toAddress, amount);
+        token_code.startCancel(toAddress, 1);
     }
 }
