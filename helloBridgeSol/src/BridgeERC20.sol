@@ -176,7 +176,7 @@ contract BridgeERC20 {
         payload[2] = high;
     }
 
-    function transferToL2(uint256 L2Address, uint256 amount) payable external {
+    function transferToL2(uint256 L2Address, uint256 amount) payable external returns (uint256) {
         _burn(msg.sender, amount);
         uint256[] memory payload = generatePayload(L2Address, amount);
 
@@ -187,6 +187,8 @@ contract BridgeERC20 {
         emit MessageHash(msgHash);
 
         nonceValue[nonce][msg.sender] = amount;
+
+        return nonce;
     }
 
     function startCancel(uint256 L2Address, uint256 nonce) external {
